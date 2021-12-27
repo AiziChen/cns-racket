@@ -15,10 +15,15 @@
     [else #f]))
 
 (define (tcp-forward ip op)
-  (let lp ([bs (read-bytes 65536 ip)])
-    (unless (eof-object? bs)
-      (write-bytes bs op)
-      (lp (read-bytes 65536 ip)))))
+  (define bs (make-bytes 65536))
+  (let lp ([subi 0])
+    (define len (read-bytes-avail! bs ip))
+    (unless (eof-object? len)
+      (define abs (subbytes bs 0 len))
+      (define rem (xor-cipher! abs "quanyec" subi))
+      (write-bytes abs op)
+      (when (= len 65536)
+        (lp rem)))))
 
 (define (handle-tcp-session ip op header)
   (define shost (get-proxy-host header))
@@ -35,7 +40,7 @@
          [else
           (values (values (substring shost 0 (- (string-length shost) 1)) 80))]))
      (define-values (dip dop) (tcp-connect host port))
-     (thread (tcp-forward ip dop))
+     (thread (lambda () (tcp-forward ip dop)))
      (tcp-forward dip op)
      (close-input-port dip)
      (close-output-port dop)]))
