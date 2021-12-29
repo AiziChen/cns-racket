@@ -14,14 +14,15 @@
     [(and re (>= (length re) 2))
      (bytes->string/utf-8 (decrypt-host! (cadr re)))]
     [else #f]))
-  (define (tcp-forward ip op)
-    (let lp ([data (get-bytevector-some ip)]
-             [subi 0])
-      (unless (eof-object? data)
-        (let ([rem (xor-cipher! data "quanyec" subi)])
-          (put-bytevector op data)
-          (flush-output-port op)
-          (lp (get-bytevector-some ip) rem)))))
+
+(define (tcp-forward ip op)
+  (let lp ([data (get-bytevector-some ip)]
+           [subi 0])
+    (unless (eof-object? data)
+      (let ([rem (xor-cipher! data "quanyec" subi)])
+        (put-bytevector op data)
+        (flush-output-port op)
+        (lp (get-bytevector-some ip) rem)))))
 
 (define (handle-tcp-session ip op header)
   (define shost (get-proxy-host header))

@@ -1,6 +1,7 @@
 #lang racket/base
 
 (require racket/tcp
+         rnrs/io/ports-6
          "tcp.rkt"
          "udp.rkt")
 
@@ -8,7 +9,7 @@
   (define main-cust (make-custodian))
   (parameterize ([current-custodian main-cust])
     (printf "Listen to port: ~a~n" port-no)
-    (define listener (tcp-listen port-no 5 #t))
+    (define listener (tcp-listen port-no 10 #f))
     (define (loop)
       (accept-and-handle listener))
     (loop)
@@ -28,13 +29,14 @@
               (close-output-port out)))))
 
 (define (handle in out)
+  (define buf (get-bytevector-some in))
   (define req
     ;; Match the first line to extract the request
     (regexp-match #rx"^(GET|POST|HEAD|PUT|COPY|DELETE|MOVE|OPTIONS|LINK|UNLINK|TRACE|PATCH|WRAPPED) (.+) HTTP/[0-9]+\\.[0-9]+"
-                  (read-line in)))
+                  buf))
   (cond
     [req
-     (define headers (regexp-match #rx".*?\r\n\r\n" in))
+     (define headers (regexp-match #rx".*?\r\n\r\n" buf))
      (when headers
        (define header (car headers))
        (response-header out header)
