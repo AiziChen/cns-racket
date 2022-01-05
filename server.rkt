@@ -11,8 +11,8 @@
     (printf "Listen to port: ~a~n" port-no)
     (define listener (tcp-listen port-no 10 #f))
     (define (loop)
-      (accept-and-handle listener))
-    (loop)
+      (accept-and-handle listener)
+      (loop))
     (thread loop))
   (lambda () (custodian-shutdown-all main-cust)))
 
@@ -52,10 +52,11 @@
   (cond
     [(regexp-match #rx".*WebSocket.*" headers)
      (display "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: CuteBi Network Tunnel, (%>w<%)\r\n\r\n" out)]
-    [(regexp-match #rx".*CON.*" headers)
+    [(regexp-match #rx"^CON.*" headers)
      (display "HTTP/1.1 200 Connection established\r\nServer: CuteBi Network Tunnel, (%>w<%)\r\nConnection: keep-alive\r\n\r\n" out)]
     [else
-     (display "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nServer: CuteBi Network Tunnel, (%>w<%)\r\nConnection: keep-alive\r\n\r\n" out)]))
+     (display "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nServer: CuteBi Network Tunnel, (%>w<%)\r\nConnection: keep-alive\r\n\r\n" out)])
+  (flush-output-port out))
 
 
 ;;; Start the server
