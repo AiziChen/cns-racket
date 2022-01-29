@@ -3,7 +3,8 @@
 (require racket/tcp
          rnrs/io/ports-6
          "tcp.rkt"
-         "udp.rkt")
+         "udp.rkt"
+         "config.rkt")
 
 (define (serve port-no)
   (define main-cust (make-custodian))
@@ -28,6 +29,8 @@
               (close-input-port in)
               (close-output-port out)))))
 
+
+;;; Handle input & output
 (define (handle in out)
   (define buf (get-bytevector-some in))
   (define req
@@ -60,7 +63,12 @@
 
 
 ;;; Start the server
-(define stop (serve 1080))
+(define stops
+  (for/list ([port *ports*])
+    (serve port)))
 
-(with-handlers ([exn:break? (lambda (_) (stop))])
+;;; Keyboard breakout
+(with-handlers ([exn:break? (lambda (_)
+                              (for ([stop stops])
+                                (stop)))])
   (sync/enable-break))

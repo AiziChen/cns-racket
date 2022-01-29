@@ -3,13 +3,14 @@
 (require racket/tcp
          racket/string
          rnrs/io/ports-6
-         "cipher.rkt")
+         "cipher.rkt"
+         "config.rkt")
 
 (provide
  handle-tcp-session)
 
 (define (get-proxy-host header)
-  (define re (regexp-match #px"Meng:\\s*(.*?)\\s*\r\n" header))
+  (define re (regexp-match (pregexp (string-append *http-flag* ":\\s*(.*?)\\s*\r\n")) header))
   (cond
     [(and re (>= (length re) 2))
      (bytes->string/utf-8 (decrypt-host! (cadr re)))]
@@ -19,7 +20,7 @@
   (let lp ([data (get-bytevector-some ip)]
            [subi 0])
     (unless (eof-object? data)
-      (let ([rem (xor-cipher! data "quanyec" subi)])
+      (let ([rem (xor-cipher! data *secret* subi)])
         (put-bytevector op data)
         (flush-output-port op)
         (lp (get-bytevector-some ip) rem)))))
