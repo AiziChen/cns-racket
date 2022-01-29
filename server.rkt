@@ -43,7 +43,7 @@
      (when headers
        (define header (car headers))
        (response-header out header)
-       (unless (regexp-match #rx".*httpUDP.*" header)
+       (unless (regexp-match (regexp (string-append ".*" *http-flag* ".*")) header)
          (printf "Start tcp forwarding...~n")
          (handle-tcp-session in out header)))]
     [else

@@ -10,7 +10,7 @@
  handle-tcp-session)
 
 (define (get-proxy-host header)
-  (define re (regexp-match (pregexp (string-append *http-flag* ":\\s*(.*?)\\s*\r\n")) header))
+  (define re (regexp-match (pregexp (string-append *proxy-key* ":\\s*(.*?)\\s*\r\n")) header))
   (cond
     [(and re (>= (length re) 2))
      (bytes->string/utf-8 (decrypt-host! (cadr re)))]
