@@ -2,7 +2,8 @@
 
 (require racket/contract
          racket/string
-         net/base64)
+         net/base64
+         "config.rkt")
 
 (provide
  xor-cipher!
@@ -23,5 +24,5 @@
 (define/contract (decrypt-host! host)
   (-> bytes? bytes?)
   (define de-host (base64-decode host))
-  (xor-cipher! de-host "quanyec" 0)
+  (xor-cipher! de-host *secret* 0)
   de-host)
