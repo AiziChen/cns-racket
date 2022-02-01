@@ -9,7 +9,7 @@
  xor-cipher!
  decrypt-host!)
 
-(define/contract (xor-cipher! data secret subi)
+(define/contract (xor-cipher! data secret [subi 0])
   (-> bytes? non-empty-string? exact-integer? exact-integer?)
   (define data-len (bytes-length data))
   (define secret-len (string-length secret))
